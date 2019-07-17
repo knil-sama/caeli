@@ -1,0 +1,71 @@
+version: "3.4"
+
+x-postgres-cred: &default-postgres-cred
+  POSTGRES_USER: caeli
+  POSTGRES_PASSWORD: caeli
+  POSTGRES_DB: caeli
+  POSTGRES_HOST: db
+  POSTGRES_PORT: 5432
+
+x-test-postgres-cred: &test-postgres-cred
+  POSTGRES_USER: test
+  POSTGRES_PASSWORD: test
+  POSTGRES_DB: test
+  POSTGRES_HOST: test_db
+  POSTGRES_PORT: 5432
+
+services:
+  tests_service:
+    build:
+      context: service/
+      args:
+        BUILD_TEST: "yes"
+    command: python -m unittest discover tests
+    environment:
+      << : *test-postgres-cred
+    depends_on:
+      - test_db
+
+  tests_api:
+    build: api/
+    command: python -m unittest discover tests
+    environment:
+      << : *test-postgres-cred
+    depends_on:
+      - test_db
+
+  test_db:
+    image: postgres
+    environment:
+      << : *test-postgres-cred
+
+  caeli_api:
+    build: api/
+    command: python caeli_api.py
+    ports:
+      - "5000:5000"
+    environment:
+      << : *default-postgres-cred
+    depends_on:
+      - caeli_service
+
+  caeli_service:
+    build: service/
+    command: python caeli_service.py --type-owner=orgs --owner=facebook  --token=${GITHUB_TOKEN}
+    environment:
+      << : *default-postgres-cred
+    depends_on:
+      - db
+
+  db:
+    image: postgres
+    environment:
+      << : *default-postgres-cred
+      PGDATA: /data/postgres
+    volumes:
+       - postgres:/data/postgres
+    ports:
+      - "5432:5432"
+
+volumes:
+    postgres:
