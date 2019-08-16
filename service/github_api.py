@@ -24,8 +24,7 @@ class GithubApi:
                         "/".join([self.url_api, endpoint]), headers=self.headers
                     )
                 else:
-                    r = requests.get(next_url, headers=self.headers
-                    )
+                    r = requests.get(next_url, headers=self.headers)
                 logging.info(r)
                 if r.status_code == requests.codes.ok:
                     result = r.json()
@@ -40,7 +39,7 @@ class GithubApi:
         return fetched_result
 
     @staticmethod
-    def _concat_result(fetched_result: list,result) -> list:
+    def _concat_result(fetched_result: list, result) -> list:
         if not isinstance(result, list):
             result = [result]
         fetched_result += result

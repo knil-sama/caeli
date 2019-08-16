@@ -14,9 +14,11 @@ jobs:
          name: "Running test service with docker compose"
          command: |
           set -ex
+          docker-compose up -d test_db
           docker-compose up --exit-code-from tests_service tests_service
      - run:
          name: "Running test api with docker compose"
          command: |
            set -ex
+           docker-compose up -d test_db
            docker-compose up --exit-code-from tests_api tests_api

@@ -1,4 +1,6 @@
+anosql~=1.0.1
 click~=7.0 
 psycopg2-binary~=2.8.3 
 requests2~=2.16.0
+tenacity~=5.1.1
 typing~=3.7.4

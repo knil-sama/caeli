@@ -6,6 +6,7 @@ from freezegun import freeze_time
 
 from service import github_api
 
+
 class TestGithubApi(unittest.TestCase):
     @patch("service.github_api.requests.get")
     def test_listing_repositories(self, mock_request):
@@ -37,5 +38,3 @@ class TestGithubApi(unittest.TestCase):
         github_client = github_api.GithubApi("fake_url", headers={}, chunk_size=10)
         res = github_client.check_rate()
         self.assertEqual(test_rate_limit["resources"], res)
-
-
