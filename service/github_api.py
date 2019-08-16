@@ -15,26 +15,41 @@ class GithubApi:
     def make_call(self, endpoint: str) -> list:
         result_to_fetch = True
         fetched_result = list()
+        next_url = None
         while result_to_fetch:
             try:
-                r = requests.get(
-                    "/".join([self.url_api, endpoint]), headers=self.headers
-                )
+                # first call
+                if not next_url:
+                    r = requests.get(
+                        "/".join([self.url_api, endpoint]), headers=self.headers
+                    )
+                else:
+                    r = requests.get(next_url, headers=self.headers
+                    )
                 logging.info(r)
                 if r.status_code == requests.codes.ok:
                     result = r.json()
-                    if not isinstance(result, list):
-                        result = [result]
-                    fetched_result += result
+                    fetched_result = self._concat_result(fetched_result, result)
+                    next_url = self._fetch_next_url(r)
                     if len(fetched_result) <= self.chunk_size:
-                        if r.links and "url" in r.links.get("next", []):
-                            url_to_fetch = r.links["next"]["url"]
-                            continue
+                        continue
                 result_to_fetch = False
             except Exception as e:
                 logging.exception(e)
                 result_to_fetch = False
         return fetched_result
+
+    @staticmethod
+    def _concat_result(fetched_result: list,result): list:
+        if not isinstance(result, list):
+            result = [result]
+        return fetched_result += result
+    @staticmethod
+    def _fetch_next_url(r):
+        url_to_fetch = None
+        if r.links and "url" in r.links.get("next", []):
+            url_to_fetch = r.links["next"]["url"]
+        return url_to_fetch
 
     def check_rate(self) -> dict:
         """
