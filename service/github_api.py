@@ -1,6 +1,6 @@
 import logging
 import requests
-
+import typing
 from dataclasses import dataclass
 
 
@@ -31,7 +31,7 @@ class GithubApi:
                     result = r.json()
                     fetched_result = self._concat_result(fetched_result, result)
                     next_url = self._fetch_next_url(r)
-                    if len(fetched_result) <= self.chunk_size:
+                    if len(fetched_result) <= self.chunk_size and next_url:
                         continue
                 result_to_fetch = False
             except Exception as e:
@@ -40,12 +40,14 @@ class GithubApi:
         return fetched_result
 
     @staticmethod
-    def _concat_result(fetched_result: list,result): list:
+    def _concat_result(fetched_result: list,result) -> list:
         if not isinstance(result, list):
             result = [result]
-        return fetched_result += result
+        fetched_result += result
+        return fetched_result
+
     @staticmethod
-    def _fetch_next_url(r):
+    def _fetch_next_url(r) -> typing.Optional[str]:
         url_to_fetch = None
         if r.links and "url" in r.links.get("next", []):
             url_to_fetch = r.links["next"]["url"]
