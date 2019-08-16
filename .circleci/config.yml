@@ -12,7 +12,13 @@ jobs:
            sudo mv ~/docker-compose /usr/local/bin/docker-compose
      - run:
          name: "Running test service with docker compose"
-         command: docker-compose up tests_service
+         command: |
+          set -o nounset
+          set -o errexit
+          docker-compose up tests_service
      - run:
          name: "Running test api with docker compose"
-         command: docker-compose up tests_api
+         command: |
+           set -o nounset
+           set -o errexit
+           docker-compose up tests_api
