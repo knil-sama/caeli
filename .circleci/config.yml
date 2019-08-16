@@ -13,12 +13,10 @@ jobs:
      - run:
          name: "Running test service with docker compose"
          command: |
-          set -o nounset
-          set -o errexit
-          docker-compose up tests_service
+          set -ex
+          docker-compose up --exit-code-from tests_service tests_service
      - run:
          name: "Running test api with docker compose"
          command: |
-           set -o nounset
-           set -o errexit
-           docker-compose up tests_api
+           set -ex
+           docker-compose up --exit-code-from tests_api tests_api
