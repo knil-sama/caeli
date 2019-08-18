@@ -22,3 +22,13 @@ jobs:
            set -ex
            docker-compose up -d test_db
            docker-compose up --exit-code-from tests_api tests_api
+     - run:
+         name: "Running integration test with docker compose"
+         command: |
+           set -ex
+           docker-compose up -d db
+           docker-compose up -d caeli_service
+           docker-compose up -d caeli_api
+           sudo apt-get install -y httpie jq
+           sleep 5
+           http GET localhost:5000/stats | jq -e '.[] | .repository'
