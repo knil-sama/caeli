@@ -126,7 +126,7 @@ def main(
         port=service.DB_PORT,
         database=service.DB_DATABASE,
     )
-    refresh_thread = RefreshThread(database_client, refresh_frequency)
+    refresh_thread = database_api.RefreshThread(database_client, refresh_frequency)
     refresh_thread.start()
     while True:
         loop(database_client, github_client, type_owner, owner)

@@ -94,3 +94,15 @@ class DatabaseApi:
 
     def refresh_view(self):
         self.queries.refresh_stats_contributions(self.connection)
+
+class RefreshThread(Thread):
+    def __init__(self, database_api: DatabaseApi, refresh_frequency:int):
+        Thread.__init__(self)
+        self.database_api = database_api
+        self.refresh_frequency = refresh_frequency
+
+    def run(self):
+        while True:
+            self.database_api.refresh_view()
+            logging.info(f"Refresh view, waiting for interval of {self.refresh_frequency} secondes")
+            time.sleep(self.refresh_frequency)
