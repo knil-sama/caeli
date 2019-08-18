@@ -18,6 +18,7 @@ class GithubApi:
         wait=tenacity.wait_fixed(2), reraise=True, stop=tenacity.stop_after_attempt(3)
     )
     def _direct_call(self, url: str):
+        logging.debug(f"calling url {url}")
         return requests.get(url, headers=self.headers)
 
     def make_call(self, endpoint: str) -> list:
@@ -76,4 +77,35 @@ class GithubApi:
         Returns:
             list: Existing repositories in json format
         """
-        return self.make_call(f"/{type_owner}/{owner}/repos")
+        return self.make_call(f"{type_owner}/{owner}/repos")
+
+    def listing_new_contributors(
+        self, contributors: list, owner: str, repo: str, since: str
+    ) -> list:
+        """
+        https://developer.github.com/v3/repos/commits/
+        """
+        starting_date = f"?since={since}" if since else ""
+        endpoint = f"repos/{owner}/{repo}/commits{starting_date}"
+        all_new_commits = self.make_call(endpoint)
+        logging.info(
+            f"{len(all_new_commits)} all new commits for {owner}/{repo} since : {since}"
+        )
+        commits_from_new_committer = list()
+        for new_commit in all_new_commits:
+            try:
+                if not new_commit["author"]["login"] in contributors:
+                    commits_from_new_committer.append(new_commit)
+            except (TypeError, KeyError) as e:
+                # author can be None and login missing
+                # logging.exception(e)
+                # logging.info(new_commit)
+                pass
+        new_contributors = dict()
+        for new_commit in commits_from_new_committer:
+            if not new_commit in list(new_contributors.keys()):
+                new_contributors[new_commit["author"]["login"]] = new_commit
+        logging.info(
+            f"Fetched {len(new_contributors)} new contributors for {owner}/{repo} since : {since}"
+        )
+        return list(new_contributors.values())
