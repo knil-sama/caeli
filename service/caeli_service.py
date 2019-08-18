@@ -4,8 +4,9 @@ import click
 import logging
 import time
 
-import github_api
-import database_api
+from service import github_api
+from service import database_api
+import service
 
 
 def time_before_reset(github_client: github_api.GithubApi, api: str = "core") -> int:
@@ -64,10 +65,10 @@ def loop(
         update_contributors_by_repo(
             database_client,
             github_client,
-            repo_id=repo[0],
-            owner=repo[1],
-            repo=repo[2],
-            since=repo[3],
+            repo_id=repo["id"],
+            owner=repo["owner"],
+            repo=repo["name"],
+            since=repo["last_commit_check"],
         )
         logging.info(f"done one batch for {repo}")
         database_client.refresh_view()
@@ -119,11 +120,11 @@ def main(
         url_api, headers=headers, chunk_size=chunk_size
     )
     database_client = database_api.DatabaseApi(
-        user=os.environ.get("POSTGRES_USER", "NOT_SET"),
-        password=os.environ.get("POSTGRES_PASSWORD", "NOT_SET"),
-        host=os.environ.get("POSTGRES_HOST", "NOT_SET"),
-        port=int(os.environ.get("POSTGRES_PORT", 42)),
-        database=os.environ.get("POSTGRES_DB", "NOT_SET"),
+        user=service.DB_USER,
+        password=service.DB_PASSWORD,
+        host=service.DB_HOST,
+        port=service.DB_PORT,
+        database=service.DB_DATABASE,
     )
     refresh_thread = RefreshThread(database_client, refresh_frequency)
     refresh_thread.start()

@@ -6,6 +6,7 @@ from freezegun import freeze_time
 
 from service import caeli_service
 
+
 class TestCaeliService(unittest.TestCase):
     def test_time_before_reset_no_reset(self):
         mock_github_api = MagicMock()

@@ -1,6 +1,8 @@
 import unittest
 from unittest.mock import patch, MagicMock
 import json
+import psycopg2
+import api
 from api import caeli_api
 
 
@@ -18,7 +20,13 @@ def unjsonify(data) -> str:
 class TestCaeliApi(unittest.TestCase):
     @classmethod
     def setUpClass(self):
-        self.connection = caeli_api.connect_db()
+        self.connection = psycopg2.connect(
+            user=api.DB_USER,
+            password=api.DB_PASSWORD,
+            host=api.DB_HOST,
+            port=api.DB_PORT,
+            database=api.DB_DATABASE,
+        )
         with self.connection.cursor() as cursor:
             cursor.execute(
                 "CREATE TABLE IF NOT EXISTS stats_contributions (repository text, date text, number_of_new_contributors int)"

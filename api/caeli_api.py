@@ -1,3 +1,5 @@
+import anosql
+import tenacity
 from flask import Flask
 from flask_restful import Api
 from flask_cors import CORS
@@ -6,10 +8,9 @@ import logging
 import os
 import json
 from flask_restful import Resource
-from psycopg2.extras import RealDictCursor
+import psycopg2.extras
 import psycopg2
-
-logging.basicConfig(level=logging.DEBUG)
+import api
 
 class Index(Resource):
     """
@@ -27,11 +28,22 @@ class Index(Resource):
 
 class Stats(Resource):
     """
-    Job Recommender API
+    Stats API
     """
-
     def __init__(self):
-        self.connection = connect_db()
+        self.connection = self._connect_db()
+        self.queries = anosql.from_path(f"{api.ROOT_DIR}/sql/stats_contributions.sql", "psycopg2")
+
+    @tenacity.retry(stop=tenacity.stop_after_delay(api.TENACITY_DELAY))
+    def _connect_db(self):
+        return psycopg2.connect(
+        user=api.DB_USER,
+        password=api.DB_PASSWORD,
+        host=api.DB_HOST,
+        port=api.DB_PORT,
+        database=api.DB_DATABASE,
+        cursor_factory=psycopg2.extras.RealDictCursor
+    )
 
     def get(self):
         """
@@ -40,14 +52,11 @@ class Stats(Resource):
             If table don't exist or is empty send a message
         """
         results = {"message": "No results to display"}
-        with self.connection.cursor(cursor_factory=RealDictCursor) as cursor:
-            try:
-                cursor.execute("SELECT * FROM stats_contributions")
-                results_query = cursor.fetchall()
-                self.connection.commit()
-                if results_query:
-                    results = results_query
-            except (psycopg2.errors.UndefinedTable) as e:
+        try:
+            results_query = self.queries.select_stats_contributions(self.connection)
+            if results_query:
+                results = results_query
+        except (psycopg2.errors.UndefinedTable, psycopg2.ProgrammingError) as e:
                 logging.exception(e)
         return results, 200
 
@@ -75,17 +84,6 @@ def create_app():
 def main():
     application = create_app()
     return application
-
-
-def connect_db():
-    return psycopg2.connect(
-        user=os.environ.get("POSTGRES_USER", "NOT_SET"),
-        password=os.environ.get("POSTGRES_PASSWORD", "NOT_SET"),
-        host=os.environ.get("POSTGRES_HOST", "NOT_SET"),
-        port=os.environ.get("POSTGRES_PORT", "NOT_SET"),
-        database=os.environ.get("POSTGRES_DB", "NOT_SET"),
-    )
-
 
 if __name__ == "__main__":  # pragma: no cover
     application = main()
