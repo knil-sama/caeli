@@ -1,7 +1,8 @@
 import logging
 import requests
-import typing
 from dataclasses import dataclass
+import tenacity
+import typing
 
 
 @dataclass
@@ -12,6 +13,13 @@ class GithubApi:
     headers: dict
     chunk_size: int
 
+    # TODO improve by listing internet and timeout error to only retry situation where we didn't reach quota
+    @tenacity.retry(
+        wait=tenacity.wait_fixed(2), reraise=True, stop=tenacity.stop_after_attempt(3)
+    )
+    def _direct_call(self, url: str):
+        return requests.get(url, headers=self.headers)
+
     def make_call(self, endpoint: str) -> list:
         result_to_fetch = True
         fetched_result = list()
@@ -20,11 +28,9 @@ class GithubApi:
             try:
                 # first call
                 if not next_url:
-                    r = requests.get(
-                        "/".join([self.url_api, endpoint]), headers=self.headers
-                    )
+                    r = self._direct_call("/".join([self.url_api, endpoint]))
                 else:
-                    r = requests.get(next_url, headers=self.headers)
+                    r = self._direct_call(next_url)
                 logging.info(r)
                 if r.status_code == requests.codes.ok:
                     result = r.json()
