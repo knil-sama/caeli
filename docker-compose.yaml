@@ -51,7 +51,7 @@ services:
 
   caeli_service:
     build: service/
-    command: python caeli_service.py --type-owner=orgs --owner=facebook  --token=${GITHUB_TOKEN}
+    command: python caeli_service.py --type-owner=orgs --owner=facebook  --token=${GITHUB_TOKEN} --refresh-frequency=600
     environment:
       << : *default-postgres-cred
     depends_on:

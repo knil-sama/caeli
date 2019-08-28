@@ -20,8 +20,8 @@ ORDER BY create_at ASC;
 -- name: upsert_contributors*!
 -- Insert contributors and update first commit if more recent
 INSERT INTO contributors 
-(login,repo_id,first_commit_at,commit_json) 
+(login, repo_id, first_commit_at, commit_json) 
 VALUES (:login, :repo_id, :first_commit_at, :commit_json)
 ON CONFLICT (login, repo_id) DO UPDATE 
-SET first_commit_at = EXCLUDED.first_commit_at, commit_json = EXCLUDED.commit_json, update_at = CURRENT_TIMESTAMP
+SET first_commit_at = EXCLUDED.first_commit_at, update_at = CURRENT_TIMESTAMP, commit_json = EXCLUDED.commit_json
 WHERE contributors.first_commit_at > EXCLUDED.first_commit_at;

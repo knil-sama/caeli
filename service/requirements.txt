@@ -1,4 +1,4 @@
-anosql~=1.0.1
+aiosql~=3.0.0
 click~=7.0 
 psycopg2-binary~=2.8.3 
 requests2~=2.16.0

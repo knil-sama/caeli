@@ -174,22 +174,23 @@ class TestDatabaseApi(unittest.TestCase):
         expected_contributors = [
             {
                 "author": {"login": "knil"},
-                "commit": {"author": {"date": "2012-07-09T16:13:30+12:00"}},
+                "commit": {"author": {"date": "2015-02-11T22:46:22Z"}},
             },
             {
                 "author": {"login": "leroy"},
-                "commit": {"author": {"date": "2012-07-09T16:13:30+12:00"}},
+                "commit": {"author": {"date": "2015-02-11T22:46:22Z"}},
             },
             {
                 "author": {"login": "knil"},
-                "commit": {"author": {"date": "2011-07-09T16:13:30+12:00"}},
+                "commit": {"author": {"date": "2015-02-11T22:46:22Z"}},
             },
             {
                 "author": {"login": "knil"},
-                "commit": {"author": {"date": "2015-07-09T16:13:30+12:00"}},
+                "commit": {"author": {"date": "2015-02-11T22:46:22Z"}},
             },
         ]
         database_client.upsert_contributors(
             repo_id=repo_json["id"], contributors=expected_contributors
         )
         database_client.refresh_view()
+        #TODO

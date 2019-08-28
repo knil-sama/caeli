@@ -2,7 +2,7 @@ import logging
 from threading import Thread
 from datetime import datetime
 import time
-import anosql
+import aiosql
 import psycopg2
 import psycopg2.extras
 import tenacity
@@ -18,7 +18,7 @@ class DatabaseApi:
         # init queries
         self.queries = None
         for table in tables:
-            queries = anosql.from_path(
+            queries = aiosql.from_path(
                 f"{service.ROOT_DIR}/sql/{table}.sql", "psycopg2"
             )
             if self.queries:
@@ -39,7 +39,8 @@ class DatabaseApi:
             host=host,
             port=port,
             dbname=database,
-            cursor_factory=psycopg2.extras.RealDictCursor,
+            cursor_factory=psycopg2.extras.DictCursor,
+            #cursor_factory=psycopg2.extras.RealDictCursor,
         )
 
     def listing_existing_contributors(self, repo_id: int) -> list:
@@ -63,6 +64,7 @@ class DatabaseApi:
             }
             for new_contributor in contributors
         ]
+        logging.debug(f"Trying to insert {len(sql_formatted_contributors)}")
         self.queries.upsert_contributors(self.connection, sql_formatted_contributors)
         if contributors:
             # yes you can have project with 0 contributors https://github.com/facebook/Conditional-character-based-RNN
