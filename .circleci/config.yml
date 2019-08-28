@@ -29,6 +29,8 @@ jobs:
            docker-compose up -d db
            docker-compose up -d caeli_service
            docker-compose up -d caeli_api
-           sudo apt-get install -y httpie jq
+           sudo apt-get update -y
+           sudo apt-get upgrade -y
+           sudo install -y httpie jq
            sleep 5
            http GET localhost:5000/stats | jq -e '.[] | .repository'
