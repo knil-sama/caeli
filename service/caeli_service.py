@@ -71,7 +71,6 @@ def loop(
             since=repo["last_commit_check"],
         )
         logging.info(f"done one batch for {repo}")
-        database_client.refresh_view()
     wait_time = time_before_reset(github_client)
     if wait_time:
         logging.info(

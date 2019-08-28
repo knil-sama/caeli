@@ -55,7 +55,7 @@ services:
     environment:
       << : *default-postgres-cred
     depends_on:
-      - db
+      - test_db
 
   db:
     image: postgres

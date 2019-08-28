@@ -39,8 +39,7 @@ class DatabaseApi:
             host=host,
             port=port,
             dbname=database,
-            cursor_factory=psycopg2.extras.DictCursor,
-            #cursor_factory=psycopg2.extras.RealDictCursor,
+            cursor_factory=psycopg2.extras.RealDictCursor,
         )
 
     def listing_existing_contributors(self, repo_id: int) -> list:
@@ -65,7 +64,9 @@ class DatabaseApi:
             for new_contributor in contributors
         ]
         logging.debug(f"Trying to insert {len(sql_formatted_contributors)}")
-        self.queries.upsert_contributors(self.connection, sql_formatted_contributors)
+        for sql_contrib in sql_formatted_contributors:
+            self.queries.upsert_contributors(self.connection, **sql_contrib)
+            logging.debug("Inserted one")
         if contributors:
             # yes you can have project with 0 contributors https://github.com/facebook/Conditional-character-based-RNN
             self.queries.update_last_commit_check_repositories(
@@ -105,7 +106,8 @@ class RefreshThread(Thread):
         self.refresh_frequency = refresh_frequency
 
     def run(self):
-        while True:
-            self.database_api.refresh_view()
-            logging.info(f"Refresh view, waiting for interval of {self.refresh_frequency} secondes")
-            time.sleep(self.refresh_frequency)
+        pass
+        #while True:
+        #    #self.database_api.refresh_view()
+        #    logging.info(f"Refresh view, waiting for interval of {self.refresh_frequency} secondes")
+        #    #time.sleep(self.refresh_frequency)

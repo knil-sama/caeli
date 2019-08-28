@@ -17,7 +17,7 @@ FROM contributors
 WHERE repo_id = :repo_id
 ORDER BY create_at ASC;
 
--- name: upsert_contributors*!
+-- name: upsert_contributors!
 -- Insert contributors and update first commit if more recent
 INSERT INTO contributors 
 (login, repo_id, first_commit_at, commit_json) 
